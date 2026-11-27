@@ -1,0 +1,41 @@
+# Local Redis for every module in this project.
+#
+#   Start:  docker compose up -d
+#   Stop:   docker compose down        (data is kept in the named volume)
+#   Reset:  docker compose down -v     (also deletes the stored data)
+
+services:
+  redis:
+    image: redis:7.4.2              # pinned so everyone runs the same version
+    container_name: redis-practice
+    ports:
+      - "6379:6379"                 # the Java examples connect to localhost:6379
+    volumes:
+      - redis-data:/data            # persist data across container restarts
+    command: ["redis-server", "--appendonly", "yes"]   # enable AOF persistence
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis-insight:
+    image: redis/redisinsight:2.70  # web UI to browse keys: http://localhost:5540
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
+    environment:
+      # Pre-register the Redis above so it appears in Redis Insight automatically.
+      # Inside the compose network, Redis is reached by its service name "redis".
+      RI_REDIS_HOST: redis
+      RI_REDIS_PORT: "6379"
+      RI_REDIS_ALIAS: redis-practice
+    volumes:
+      - redis-insight-data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis-data:
+  redis-insight-data:
