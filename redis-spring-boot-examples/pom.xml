@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Placeholder module for upcoming Spring Boot examples.
-  No Spring Boot dependencies or code yet - see README.md.
+  Spring Boot examples: RedisTemplate, Spring Data repositories, caching and sessions.
+
+  This module keeps the project's own parent POM (instead of spring-boot-starter-parent)
+  and imports Spring Boot's BOM, which manages the versions of every Spring/Redis library.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -15,9 +17,84 @@
     </parent>
 
     <artifactId>redis-spring-boot-examples</artifactId>
-    <!-- "pom" for now because there is no code to package; switch to "jar" when code is added. -->
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <name>redis-spring-boot-examples</name>
-    <description>Coming soon: Spring Data Redis, caching, and sessions</description>
+    <description>Spring Data Redis, caching, and sessions with Spring Boot</description>
+
+    <properties>
+        <spring-boot.version>4.2.0</spring-boot.version>
+        <!-- Spring Boot 4 is built on JUnit 6; override the parent's JUnit 5 version for this module -->
+        <junit.version>6.1.3</junit.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Same versions Spring Boot itself is tested with (Lettuce, Spring Data Redis, Jackson, ...) -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Spring Data Redis + the Lettuce client: RedisTemplate and @RedisHash repositories -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- Spring's cache abstraction (@Cacheable, @CacheEvict); Redis is used as the store -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
+        <!-- Spring Session: keeps HttpSession data in Redis instead of server memory -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-session-data-redis</artifactId>
+        </dependency>
+
+        <!-- Web layer (Spring MVC + embedded Tomcat + Jackson) for the REST endpoints -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+
+        <!-- Tests: JUnit, AssertJ, Spring test support, and MockMvc for the web endpoints -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!-- Keep method parameter names so Spring can bind @PathVariable/@RequestParam by name -->
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <!-- `mvn -pl redis-spring-boot-examples spring-boot:run` starts the app -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>

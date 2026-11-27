@@ -476,3 +476,7 @@ Try these in Redis Insight's **CLI** or **Workbench**, or add them to an example
 | `demo:session:abc` is missing | Expected: it expires 60 seconds after `Main` runs. |
 | Can't find test keys in Redis Insight | Tests use **database 15**. Add a connection with database index 15 to see them. |
 | Want a completely fresh start | `docker compose down -v`, then `docker compose up -d`. This **deletes all data**. |
+
+---
+
+**Next:** see how a Spring Boot app uses the same ideas (RedisTemplate, repositories, caching and sessions) in [redis-spring-boot-examples](../redis-spring-boot-examples/README.md).
